@@ -1,0 +1,48 @@
+---
+- name: intranet services
+  hosts: local
+  connection: local
+  become: yes
+  tasks:
+
+    - name: latest apache2 version installed
+      apt:
+        name: apache2
+        state: latest
+
+    - name: apache2 enabled and running
+      service:
+        name: apache2
+        enabled: true
+        state: started
+
+    - name: ufw enabled and running
+      service:
+        name: ufw
+        enabled: true
+        state: started
+
+    - name: ufw permits httpd service
+      ufw:
+        rule: allow
+        port: 80
+
+    - name: restart ufw
+      service:
+        name: ufw
+        state: restarted
+
+    - name: clean /var/www/html
+      file: path=/var/www/html state=absent
+
+    - name: deploy website
+      git:
+        repo: https://github.com/mydadisalive/website.git
+        dest: /var/www/html
+        accept_hostkey: yes
+
+    - name: restart apache2
+      service:
+        name: apache2
+        state: restarted
+
